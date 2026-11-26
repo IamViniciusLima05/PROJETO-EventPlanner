@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventPlanner | Organize seu evento</title>
+  <meta name="description" content="Organize eventos com lista de convidados, checklist de tarefas, orçamento e cronograma do dia.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="topo__linha">
+      <p class="marca">Event<b>Planner</b></p>
+      <div class="seletor">
+        <label class="sr" for="evento-sel">Evento</label>
+        <select id="evento-sel"></select>
+        <button class="icone" id="novo-evento" aria-label="Novo evento" title="Novo evento">+</button>
+        <button class="icone" id="editar-evento" aria-label="Editar evento" title="Editar evento">✎</button>
+      </div>
+    </div>
+    <div class="hero" id="hero"></div>
+    <nav class="abas" role="tablist" aria-label="Seções">
+      <button role="tab" data-aba="geral" aria-selected="true">Visão geral</button>
+      <button role="tab" data-aba="convidados" aria-selected="false">Convidados</button>
+      <button role="tab" data-aba="tarefas" aria-selected="false">Checklist</button>
+      <button role="tab" data-aba="orcamento" aria-selected="false">Orçamento</button>
+      <button role="tab" data-aba="cronograma" aria-selected="false">Cronograma</button>
+    </nav>
+  </header>
+
+  <main class="conteudo">
+    <section id="v-geral" class="painel-aba"></section>
+
+    <section id="v-convidados" class="painel-aba" hidden>
+      <div class="barra">
+        <form class="add-linha" id="form-conv" autocomplete="off">
+          <label class="sr" for="cv-nome">Nome</label><input id="cv-nome" placeholder="Nome do convidado" required maxlength="50">
+          <label class="sr" for="cv-grupo">Grupo</label><input id="cv-grupo" placeholder="Grupo (família, amigos…)" list="grupos" maxlength="30">
+          <label class="sr" for="cv-acomp">Acompanhantes</label><input id="cv-acomp" type="number" min="0" max="20" value="0" title="Acompanhantes" class="curto">
+          <button class="btn">Adicionar</button>
+        </form>
+        <datalist id="grupos"></datalist>
+      </div>
+      <div class="barra filtros">
+        <input type="search" id="cv-busca" placeholder="Buscar convidado" aria-label="Buscar convidado">
+        <div class="seg" id="cv-filtro" role="group" aria-label="Filtrar por resposta"></div>
+        <button class="btn claro" id="cv-colar">Colar lista</button>
+        <button class="btn claro" id="cv-exportar">⬇ CSV</button>
+      </div>
+      <ul class="lista" id="lista-conv"></ul>
+    </section>
+
+    <section id="v-tarefas" class="painel-aba" hidden>
+      <form class="add-linha barra" id="form-tarefa" autocomplete="off">
+        <label class="sr" for="tf-txt">Tarefa</label><input id="tf-txt" placeholder="Nova tarefa (ex.: contratar fotógrafo)" required maxlength="80">
+        <label class="sr" for="tf-data">Prazo</label><input id="tf-data" type="date">
+        <label class="sr" for="tf-resp">Responsável</label><input id="tf-resp" placeholder="Responsável" maxlength="30" class="medio">
+        <button class="btn">Adicionar</button>
+      </form>
+      <div class="lista-tarefas" id="lista-tarefas"></div>
+    </section>
+
+    <section id="v-orcamento" class="painel-aba" hidden>
+      <div class="orc-resumo" id="orc-resumo"></div>
+      <form class="add-linha barra" id="form-orc" autocomplete="off">
+        <label class="sr" for="or-item">Item</label><input id="or-item" placeholder="Item (ex.: buffet)" required maxlength="50">
+        <label class="sr" for="or-cat">Categoria</label><select id="or-cat"></select>
+        <label class="sr" for="or-prev">Previsto</label><input id="or-prev" type="number" min="0" step="0.01" placeholder="Previsto R$" class="medio">
+        <label class="sr" for="or-real">Valor real</label><input id="or-real" type="number" min="0" step="0.01" placeholder="Real R$" class="medio">
+        <button class="btn">Adicionar</button>
+      </form>
+      <div class="tabela-wrap"><table class="tabela" id="tabela-orc"></table></div>
+    </section>
+
+    <section id="v-cronograma" class="painel-aba" hidden>
+      <form class="add-linha barra" id="form-cron" autocomplete="off">
+        <label class="sr" for="cr-hora">Horário</label><input id="cr-hora" type="time" required class="medio">
+        <label class="sr" for="cr-txt">Atividade</label><input id="cr-txt" placeholder="Atividade (ex.: chegada dos convidados)" required maxlength="80">
+        <label class="sr" for="cr-resp">Responsável</label><input id="cr-resp" placeholder="Responsável / local" maxlength="40" class="medio">
+        <button class="btn">Adicionar</button>
+      </form>
+      <ol class="cronograma" id="cronograma"></ol>
+      <button class="btn claro" id="cr-copiar">Copiar cronograma</button>
+    </section>
+  </main>
+
+  <dialog id="dlg-evento" aria-labelledby="de-titulo">
+    <form method="dialog" class="form" id="form-evento">
+      <div class="form__topo"><h2 id="de-titulo">Novo evento</h2><button class="fechar" value="cancelar" formnovalidate aria-label="Fechar">×</button></div>
+      <label>Nome do evento*<input id="ev-nome" required maxlength="60" placeholder="Ex.: Aniversário de 30 anos"></label>
+      <div class="tipos" id="ev-tipos" role="radiogroup" aria-label="Tipo de evento"></div>
+      <div class="g2">
+        <label>Data*<input id="ev-data" type="date" required></label>
+        <label>Horário<input id="ev-hora" type="time"></label>
+        <label>Local<input id="ev-local" maxlength="80"></label>
+        <label>Orçamento total (R$)<input id="ev-orc" type="number" min="0" step="0.01"></label>
+      </div>
+      <label class="check" id="ev-modelo-box"><input type="checkbox" id="ev-modelo" checked> Começar com uma checklist pronta para este tipo de evento</label>
+      <div class="form__rodape"><button type="button" class="btn perigo" id="excluir-evento" hidden>Excluir evento</button><span></span><button class="btn claro" value="cancelar" formnovalidate>Cancelar</button><button class="btn" value="salvar">Salvar</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-colar" aria-labelledby="dc-titulo">
+    <form method="dialog" class="form">
+      <div class="form__topo"><h2 id="dc-titulo">Colar lista de convidados</h2><button class="fechar" value="cancelar" formnovalidate aria-label="Fechar">×</button></div>
+      <label>Um nome por linha. Para indicar acompanhantes, use “+2” no fim (ex.: <em>Ana Souza +1</em>).<textarea id="colar-txt" rows="8"></textarea></label>
+      <label>Grupo para todos (opcional)<input id="colar-grupo" list="grupos"></label>
+      <div class="form__rodape"><span></span><span></span><button class="btn claro" value="cancelar" formnovalidate>Cancelar</button><button class="btn" value="salvar">Adicionar todos</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <script src="js/script.js"></script>
+</body>
+</html>
